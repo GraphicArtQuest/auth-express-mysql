@@ -4,8 +4,9 @@ const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const session = require('express-session')
 
-const { databaseDefaults } = require('../index')
-const { debug } = require('../index')
+const { databaseDefaults, debug } = require('../index')
+const { AuthExpressStore } = require('../index')
+
 /**
  * Checks if the user is not currently authenticated. If already authenticated, go to homepage. If not, continue.
  * @param {Function} req The request header
@@ -53,7 +54,7 @@ function compareCredentials(email, password) {
 
 /**
  * For testing purposes, initializes Passport
- * @param passportInstance An instance of Passport
+ * @param {object} passportInstance An instance of Passport
  * @returns {void}
  */
 function initializePassport(passportInstance) {
@@ -127,7 +128,7 @@ app.post(
         // eslint-disable-next-line consistent-return
         await passport.authenticate('local', async (err, user, errorMessage) => {
             debug.log('ATTEMPTING TO AUTHENTICATE', user)
-            if (errorMessage) {
+            if (!user || errorMessage) {
                 debug.log('THERE WAS AN ERROR:', errorMessage)
                 if (req.userDetails) {
                     // We are dealing with an actual user account that failed authentication
@@ -136,10 +137,10 @@ app.post(
                         .status(401)
                         .send('Unable to authenticate with that email and password combination')
                 }
-                return res.render('pages/login', {
-                    failureMessage:
-                        'Unable to authenticate with that email and password combination'
-                })
+                debug.log(`Unable to authenticate with that email and password combination`)
+                return res
+                    .status(401)
+                    .send('Unable to authenticate with that email and password combination')
             }
             debug.log('SUCCESSFULLY AUTHENTICATED:', user)
 
@@ -153,14 +154,14 @@ app.post(
                     )
                     return res.status(500).send('Uncaught error in login')
                 }
-                debug.log(`Logged in user '${req.user}'`)
+                debug.log(`Logged in user '${req.user}', sessionID: ${req.sessionID}`)
                 // await db.update('UPDATE USERS SET LOGIN_ATTEMPTS = ? WHERE EMAIL = ?', [0, req.user])
                 return next()
             })
         })(req, res, next)
     },
     (req, res) => {
-        debug.log('FINAL REQUEST COOKIE IN HEADER:', req.headers.cookie)
+        debug.log('Redirecting to /protected route')
         res.redirect('/protected')
     }
 )
