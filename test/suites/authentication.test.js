@@ -3,8 +3,11 @@ const request = require('supertest')
 const { app } = require('../app')
 const { debug } = require('../../index')
 
+beforeEach(async () => {
+    await debug.test(expect.getState().currentTestName)
+})
+
 test('Passport successfully authenticates and cookie can be saved', async () => {
-    await debug.test('Passport successfully authenticates and cookie can be saved')
     const goodCredentials = { email: 'test@test.com', password: 'good' }
     const agent = request.agent(app)
     await agent.get('/').expect(302).expect('Location', '/login')
@@ -19,7 +22,6 @@ test('Passport successfully authenticates and cookie can be saved', async () => 
         .then((res) => {
             // eslint-disable-next-line prefer-destructuring
             cookie = res.header['set-cookie'][0]
-            debug.error('cookie header set')
         })
 
     await agent.set('Cookie', cookie).get('/').expect(200)
@@ -28,7 +30,6 @@ test('Passport successfully authenticates and cookie can be saved', async () => 
 })
 
 test('Bad credentials do not work', async () => {
-    await debug.test('Bad credentials do not work')
     const badCredentials = { email: 'test@test.com', password: 'bad' }
     const agent = request.agent(app)
     await agent.post('/login').send(badCredentials).expect(401)

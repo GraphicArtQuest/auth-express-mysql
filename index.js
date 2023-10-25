@@ -38,10 +38,15 @@ const createTableStatements = `CREATE TABLE SESSIONS (
 class AuthExpressStore extends Store {
     constructor(configOptions) {
         super()
+        debug.log('AuthExpressStore is initializing...')
+        // Process these setting variables in priority order. Type checking occurs in sanitizeConfiguration()
         this.settings = {
             databaseConfig: {
                 host: process.env.HOST || configOptions?.host || databaseDefaults.host,
-                port: process.env.DATABASE_PORT || configOptions?.port || databaseDefaults.port,
+                port:
+                    parseInt(process.env.DATABASE_PORT, 10) || // process.env stores everything as strings. Convert the port back to a number here.
+                    configOptions?.port ||
+                    databaseDefaults.port,
                 user: process.env.DATABASE_USER || configOptions?.user || databaseDefaults.user,
                 password:
                     process.env.DATABASE_PASSWORD ||
@@ -55,17 +60,74 @@ class AuthExpressStore extends Store {
             isAsync: configOptions?.isAsync || true,
             tableName: configOptions?.tableName || schemaDefaults.tableName,
             columnNames: {
-                SESSION_ID: configOptions?.columnNames?.sessionID || 'SESSION_ID',
-                EXPIRES: configOptions?.columnNames?.expires || 'EXPIRES',
-                DATA: configOptions?.columnNames?.data || 'DATA',
-                USER: configOptions?.columnNames?.user || 'USER'
+                sessionID: configOptions?.columnNames?.sessionID || 'SESSION_ID',
+                expires: configOptions?.columnNames?.expires || 'EXPIRES',
+                data: configOptions?.columnNames?.data || 'DATA',
+                user: configOptions?.columnNames?.user || 'USER'
             }
         }
+
+        this.sanitizeConfiguration()
 
         debug.log('AuthExpressStore successfully initialized')
     }
 
-    connectToDatabase() {
+    sanitizeConfiguration() {
+        debug.log('AuthExpressStore is sanitizing the input configuration...')
+        if (typeof this.settings.databaseConfig.host !== 'string') {
+            const message = `The database host must be a string. Received: ${typeof this.settings
+                .databaseConfig.host}`
+            debug.error(message)
+            throw Error(message)
+        }
+
+        if (typeof this.settings.databaseConfig.port !== 'number') {
+            const message = `The database port must be coercible to an integer. Received: ${typeof this
+                .settings.databaseConfig.port}`
+            debug.error(message)
+            throw Error(message)
+        }
+        this.settings.databaseConfig.port = parseInt(this.settings.databaseConfig.port, 10) // Takes any floats and converts them to integers
+
+        if (typeof this.settings.databaseConfig.user !== 'string') {
+            const message = `The database user must be a string. Received: ${typeof this.settings
+                .databaseConfig.user}`
+            debug.error(message)
+            throw Error(message)
+        }
+
+        if (typeof this.settings.databaseConfig.password !== 'string') {
+            const message = `The database user password must be a string. Received: ${typeof this
+                .settings.databaseConfig.password}`
+            debug.error(message)
+            throw Error(message)
+        }
+
+        if (typeof this.settings.databaseConfig.database !== 'string') {
+            const message = `The database name must be a string. Received: ${typeof this.settings
+                .databaseConfig.database}`
+            debug.error(message)
+            throw Error(message)
+        }
+
+        if (typeof this.settings.tableName !== 'string') {
+            const message = `The session table name must be a string. Received: ${typeof this
+                .tableName}`
+            debug.error(message)
+            throw Error(message)
+        }
+
+        Object.keys(this.settings.columnNames).forEach((column) => {
+            if (typeof this.settings.columnNames[column] !== 'string') {
+                const message = `The table column name for ${column} must be a string. Received: ${typeof this
+                    .settings.columnNames[column]}`
+                debug.error(message)
+                throw Error(message)
+            }
+        })
+    }
+
+    async connectToDatabase() {
         this.connection = mysql.createConnection({
             host: this.settings.databaseConfig.host,
             user: this.settings.databaseConfig.user,
@@ -75,14 +137,14 @@ class AuthExpressStore extends Store {
         })
         this.connection.connect((err) => {
             if (err) {
-                debug.error('Unable to connect to the database')
+                debug.error(`Unable to connect to the database: ${err}`)
                 throw err
             }
             debug.log('Successfully connected to the database')
         })
     }
 
-    closeDatabaseConnection() {
+    async closeDatabaseConnection() {
         this.connection.destroy()
         debug.log('Successfully closed the database connection')
     }
@@ -114,7 +176,7 @@ class AuthExpressStore extends Store {
 
     destroy(sessionID, callback) {
         const sql = 'DELETE FROM ?? WHERE ?? = ?'
-        const params = [this.settings.tableName, this.settings.columnNames.SESSION_ID, sessionID]
+        const params = [this.settings.tableName, this.settings.columnNames.sessionID, sessionID]
         this.connectToDatabase()
         this.connection.query(sql, params, (error, result) => {
             if (error) {
@@ -134,15 +196,15 @@ class AuthExpressStore extends Store {
     get(sessionID, callback) {
         const sql = 'SELECT ?? FROM ?? WHERE ?? = ?'
         const params = [
-            this.settings.columnNames.DATA,
+            this.settings.columnNames.data,
             this.settings.tableName,
-            this.settings.columnNames.SESSION_ID,
+            this.settings.columnNames.sessionID,
             sessionID
         ]
         this.connectToDatabase()
         this.connection.query(sql, params, (error, result) => {
             if (error) {
-                debug.log(`Session ${sessionID} cannot be fetched: ${error.message}`)
+                debug.error(`Session ${sessionID} cannot be fetched: ${error.message}`)
                 return this.finalCallback(callback, error)
             }
 
@@ -168,17 +230,17 @@ class AuthExpressStore extends Store {
             'INSERT INTO ?? (??, ??, ??, ??) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE ?? = ?, ?? = ?'
         const params = [
             this.settings.tableName,
-            this.settings.columnNames.SESSION_ID,
-            this.settings.columnNames.DATA,
-            this.settings.columnNames.EXPIRES,
-            this.settings.columnNames.USER,
+            this.settings.columnNames.sessionID,
+            this.settings.columnNames.data,
+            this.settings.columnNames.expires,
+            this.settings.columnNames.user,
             sessionID,
             sessionData,
             timeExpires,
             String(session.passport.user),
-            this.settings.columnNames.DATA,
+            this.settings.columnNames.data,
             sessionData,
-            this.settings.columnNames.EXPIRES,
+            this.settings.columnNames.expires,
             timeExpires
         ]
 
