@@ -19,9 +19,10 @@ test('Passport successfully authenticates and cookie can be saved', async () => 
         .then((res) => {
             // eslint-disable-next-line prefer-destructuring
             cookie = res.header['set-cookie'][0]
+            debug.error('cookie header set')
         })
 
-    await agent.get('/').set('Cookie', cookie).expect(200)
+    await agent.set('Cookie', cookie).get('/').expect(200)
     await agent.get('/protected').set('Cookie', cookie).expect(302).expect('Location', '/')
     await agent.get('/notProtected').set('Cookie', cookie).expect(302).expect('Location', '/')
 })

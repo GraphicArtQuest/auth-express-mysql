@@ -95,6 +95,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(
     session({
+        store: new AuthExpressStore(),
         name: 'sessionID',
         secret: 'testing_secret',
         resave: false,
@@ -147,7 +148,7 @@ app.post(
             // There is an existing user, and this user has successfully authenticated. Log them in.
             debug.log('LOGGING IN USER')
             req.login(user, (error) => {
-                debug.log('OPERATING INSIDE THE LOGIN CALLBACK FUNCTION NOW...')
+                debug.log('Attempting to login user with a unique sessionID...')
                 if (error) {
                     debug.log(
                         `Uncaught error caught while attempting to login user '${user}'. ${error}`

@@ -11,7 +11,8 @@
         "lint": "eslint . --ext .js --fix",
         "serve": "set DEBUG=* &  node test/setupTestServer",
         "test": "jest --coverage --verbose --silent",
-        "debug": "set DEBUG_COLORS=1 & set DEBUG_HIDE_DATE=1 & set DEBUG=auth-express-mysql:*,superagent,express-session & jest --coverage --verbose"
+        "debug": "set DEBUG_COLORS=1 & set DEBUG_HIDE_DATE=1 & set DEBUG=auth-express-mysql:*,superagent,express-session & jest --coverage --verbose",
+        "debug:watch": "set DEBUG_COLORS=1 & set DEBUG_HIDE_DATE=1 & set DEBUG=auth-express-mysql:*,superagent,express-session & jest --verbose --watch"
     },
     "keywords": [
         "express",
