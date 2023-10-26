@@ -138,15 +138,17 @@ class AuthExpressStore extends Store {
         this.connection.connect((err) => {
             if (err) {
                 debug.error(`Unable to connect to the database: ${err}`)
-                throw err
+                return
             }
             debug.log('Successfully connected to the database')
         })
     }
 
     async closeDatabaseConnection() {
-        this.connection.destroy()
-        debug.log('Successfully closed the database connection')
+        if (this.connection.state !== 'disconnected') {
+            this.connection.destroy()
+            debug.log('Successfully closed the database connection')
+        }
     }
 
     /**
@@ -181,7 +183,7 @@ class AuthExpressStore extends Store {
         this.connection.query(sql, params, (error, result) => {
             if (error) {
                 debug.error(`Session ${sessionID} cannot be deleted: ${error.message}`)
-                this.finalCallback(callback, error)
+                return this.finalCallback(callback, error)
             }
             debug.log(
                 `Session ${sessionID} successfully destroyed. Client result: ${JSON.stringify(
@@ -237,7 +239,7 @@ class AuthExpressStore extends Store {
             sessionID,
             sessionData,
             timeExpires,
-            String(session.passport.user),
+            session.passport?.user,
             this.settings.columnNames.data,
             sessionData,
             this.settings.columnNames.expires,

@@ -150,7 +150,7 @@ app.post(
             req.login(user, (error) => {
                 debug.log('Attempting to login user with a unique sessionID...')
                 if (error) {
-                    debug.log(
+                    debug.error(
                         `Uncaught error caught while attempting to login user '${user}'. ${error}`
                     )
                     return res.status(500).send('Uncaught error in login')
