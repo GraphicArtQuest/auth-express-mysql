@@ -26,7 +26,7 @@ test('Should log an error without crashing the app if the database is not reacha
         })
 })
 
-test('Attempting to set with bad database connection logs error without crashing the app', async () => {
+test('Attempting to set with bad database connection logs error without crashing the app', (done) => {
     const sessionData = {
         cookie: {
             originalMaxAge: 1209600000,
@@ -40,9 +40,19 @@ test('Attempting to set with bad database connection logs error without crashing
     }
     const store = new AuthExpressStore()
     expect(() => {
-        // eslint-disable-next-line no-unused-vars
         store.set('5qez7xPL2NmZST_1aexncI-DoIx_l4_e', sessionData, (res) => {
             expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
+test('Attempting to get with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.get('5qez7xPL2NmZST_1aexncI-DoIx_l4_e', (res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
         })
     }).not.toThrow()
 })

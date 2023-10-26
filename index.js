@@ -185,11 +185,20 @@ class AuthExpressStore extends Store {
                 debug.error(`Session ${sessionID} cannot be deleted: ${error.message}`)
                 return this.finalCallback(callback, error)
             }
-            debug.log(
-                `Session ${sessionID} successfully destroyed. Client result: ${JSON.stringify(
-                    result
-                )}`
-            )
+
+            if (result.affectedRows !== 0) {
+                debug.log(
+                    `Session ${sessionID} successfully destroyed. Client result: ${JSON.stringify(
+                        result
+                    )}`
+                )
+            } else {
+                debug.log(
+                    `Nothing to destroy, session ${sessionID} did not exist. Client result: ${JSON.stringify(
+                        result
+                    )}`
+                )
+            }
 
             return this.finalCallback(callback, error)
         })
