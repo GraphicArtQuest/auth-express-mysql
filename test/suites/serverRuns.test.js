@@ -1,3 +1,6 @@
+/**
+ * This test provides basic functions to verify the test express app can serve pages appropriately.
+ */
 const request = require('supertest')
 
 const { app } = require('../app')

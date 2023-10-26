@@ -1,3 +1,7 @@
+/**
+ * This test suite evaluates the class's initialization by testing various configuration conditions to ensure
+ * problems are met with descriptive error messages.
+ */
 const { AuthExpressStore, databaseDefaults, debug } = require('../../index')
 
 beforeEach(async () => {

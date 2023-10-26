@@ -1,3 +1,7 @@
+/**
+ * This module tests a basic express application using the server store. This gives confidence that the store will
+ * work in intended production environments.
+ */
 const request = require('supertest')
 
 const { app } = require('../app')
