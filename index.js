@@ -3,6 +3,11 @@ const createDebug = require('debug')
 const mysql = require('mysql')
 const { Store } = require('express-session')
 
+/**
+ * Used to help with various debug messaging throughout the program.
+ * @example
+ * debug.log('This is my error message description')
+ */
 const debug = {
     log: createDebug('auth-express-mysql:log'),
     error: createDebug('auth-express-mysql:error'),
@@ -35,6 +40,46 @@ const createTableStatements = `CREATE TABLE SESSIONS (
         USER varchar(255) not null
     )`
 
+/**
+ * Used in Express apps as an interface for an external session store residing in a MySQL database.
+ * 
+ * Once properly configured, it is designed to silently handle errors. This way, any issues that arise during operation
+ * will fail gracefully without taking the entire application offline.
+ * @param {object} configOptions An optional object describing the session settings. These can also be set using
+ * environment variables, or omitted to use the defaults. See the `README` for more configuration information.
+ * @example
+    const configOptions = {
+        host: 'localhost'
+        port: 3306,
+        user: 'auth_express_mysql_test_user',
+        password: 'password123456',
+        database: 'auth_express_mysql_testing',
+        tableName: 'SESSIONS',
+        columnNames: {
+            sessionID: 'SESSION_ID',
+            expires: 'EXPIRES',
+            data: 'DATA',
+            user: 'USER'
+        }
+    }
+ 
+    app.use(
+        session({
+            store: new AuthExpressStore(configOptions),
+            name: 'sessionID',
+            secret: 'my_session_secret',
+            resave: false,
+            saveUninitialized: false,
+            rolling: true,
+            cookie: {
+                secure: true,
+                httpOnly: true,
+                domain: process.env.HOST || 'localhost',
+                maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+            }
+        })
+    )
+ */
 class AuthExpressStore extends Store {
     constructor(configOptions) {
         super()
@@ -72,6 +117,12 @@ class AuthExpressStore extends Store {
         debug.log('AuthExpressStore successfully initialized')
     }
 
+    /**
+     * Provides basic error checking and cleaning up over user provided config info. If there are irreperable problems
+     * with the user's configuration, this class will throw an error. This error occurs at server startup, therefore an
+     * interuption in service is deniable before the system is placed online.
+     * @returns {void}
+     */
     sanitizeConfiguration() {
         debug.log('AuthExpressStore is sanitizing the input configuration...')
         if (typeof this.settings.databaseConfig.host !== 'string') {
@@ -127,7 +178,12 @@ class AuthExpressStore extends Store {
         })
     }
 
-    async connectToDatabase() {
+    /**
+     * Uses the store's configuration settings to connect to the MySQL database. If the database is inaccessible, it
+     * will log the issue through `debug`, but otherwise will not cause further disruption.
+     * @returns {void}
+     */
+    connectToDatabase() {
         this.connection = mysql.createConnection({
             host: this.settings.databaseConfig.host,
             user: this.settings.databaseConfig.user,
@@ -144,7 +200,11 @@ class AuthExpressStore extends Store {
         })
     }
 
-    async closeDatabaseConnection() {
+    /**
+     * Attempts to close the database connection. If called when the connection is inactive, it does nothing.
+     * @returns {void}
+     */
+    closeDatabaseConnection() {
         if (this.connection.state !== 'disconnected') {
             this.connection.destroy()
             debug.log('Successfully closed the database connection')
@@ -167,6 +227,9 @@ class AuthExpressStore extends Store {
         this.closeDatabaseConnection()
         callback(error, data)
     }
+
+    // NOTE: All methods below extend the `Store` class.
+    // Documentation for those functions is maintained under the `express-session` package.
 
     all(callback) {
         return callback()
