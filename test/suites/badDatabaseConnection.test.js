@@ -9,6 +9,18 @@ const request = require('supertest')
 const { AuthExpressStore, debug } = require('../../index')
 const { app } = require('../app')
 
+const sessionData = {
+    cookie: {
+        originalMaxAge: 1209600000,
+        expires: '2023-11-09T15:40:55.188Z',
+        secure: false,
+        httpOnly: true,
+        domain: 'localhost',
+        path: '/'
+    },
+    passport: { user: 'test@test.com' }
+}
+
 beforeEach(() => {
     debug.test(expect.getState().currentTestName)
 })
@@ -27,17 +39,6 @@ test('Should log an error without crashing the app if the database is not reacha
 })
 
 test('Attempting to set with bad database connection logs error without crashing the app', (done) => {
-    const sessionData = {
-        cookie: {
-            originalMaxAge: 1209600000,
-            expires: '2023-11-09T15:40:55.188Z',
-            secure: false,
-            httpOnly: true,
-            domain: 'localhost',
-            path: '/'
-        },
-        passport: { user: 'test@test.com' }
-    }
     const store = new AuthExpressStore()
     expect(() => {
         store.set('5qez7xPL2NmZST_1aexncI-DoIx_l4_e', sessionData, (res) => {
@@ -71,6 +72,26 @@ test('Attempting to use clear with bad database connection logs error without cr
     const store = new AuthExpressStore()
     expect(() => {
         store.clear((res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
+test('Attempting to return length with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.length((res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
+test('Attempting to touch with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.touch('abcd', sessionData, (res) => {
             expect(res).toBeInstanceOf(Error)
             done()
         })

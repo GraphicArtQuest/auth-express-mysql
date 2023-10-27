@@ -320,7 +320,20 @@ class AuthExpressStore extends Store {
     }
 
     length(callback) {
-        return callback()
+        const sql = 'SELECT COUNT(*) AS LEN FROM ?? WHERE ?? >= ?'
+        // Get all info from all sessions that are not expired
+        const params = [this.settings.tableName, this.settings.columnNames.expires, Date.now()]
+        this.connectToDatabase()
+
+        this.connection.query(sql, params, (error, result) => {
+            if (error) {
+                debug.error(`Cannot get length of all active sessions: ${error.message}`)
+                return this.finalCallback(callback, error)
+            }
+
+            debug.log(`Identified ${result.length} unexpired sessions.`)
+            return this.finalCallback(callback, error, result[0].LEN)
+        })
     }
 
     set(sessionID, session, callback) {
@@ -357,7 +370,29 @@ class AuthExpressStore extends Store {
     }
 
     touch(sessionID, session, callback) {
-        return callback()
+        const sessionData = JSON.stringify(session)
+        const timeExpires = session.cookie.expires
+        const sql = 'UPDATE ?? SET ?? = ?, ?? = ? WHERE ?? = ?'
+        const params = [
+            this.settings.tableName,
+            this.settings.columnNames.data,
+            sessionData,
+            this.settings.columnNames.expires,
+            Date.parse(timeExpires),
+            this.settings.columnNames.sessionID,
+            sessionID
+        ]
+
+        this.connectToDatabase()
+        this.connection.query(sql, params, async (error, result) => {
+            if (error) {
+                debug.error(`Cannot touch Session ID ${sessionID}. ${error.message}`)
+            } else {
+                debug.log(`Session ID ${sessionID} successfully touched.`)
+                debug.log(`Client result: ${JSON.stringify(result)}`)
+            }
+            return this.finalCallback(callback, error)
+        })
     }
 }
 

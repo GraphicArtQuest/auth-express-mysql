@@ -120,7 +120,7 @@ test('ALL returns an array of all existing sessions that are not expired', (done
                 store.set(session3.sessionID, session3.sessionData, async () => {
                     store.set(session4.sessionID, session4.sessionData, async () => {
                         store.set(session5.sessionID, session5.sessionData, async () => {
-                            store.all(async (err2, data) => {
+                            store.all(async (err, data) => {
                                 expect(Array.isArray(data)).toBeTruthy()
                                 expect(data).toHaveLength(3)
                                 done()
@@ -146,7 +146,7 @@ test('CLEAR removes all sessions from the store', (done) => {
             store.set(session3.sessionID, session3.sessionData, async () => {
                 store.set(session4.sessionID, session4.sessionData, async () => {
                     store.clear(async () => {
-                        store.all(async (err2, data) => {
+                        store.all(async (err, data) => {
                             expect(data).toHaveLength(0)
                             done()
                         })
@@ -155,4 +155,95 @@ test('CLEAR removes all sessions from the store', (done) => {
             })
         })
     })
+})
+
+test('LENGTH will successfully report count of unexpired sessions when present', (done) => {
+    const store = new AuthExpressStore()
+
+    const session1 = getSessionDetails()
+    const session2 = getSessionDetails()
+    const session3 = getSessionDetails()
+    const session4 = getSessionDetails(undefined, Date.now() - 100)
+
+    store.clear(async () => {
+        store.set(session1.sessionID, session1.sessionData, async () => {
+            store.set(session2.sessionID, session2.sessionData, async () => {
+                store.set(session3.sessionID, session3.sessionData, async () => {
+                    store.set(session4.sessionID, session4.sessionData, async () => {
+                        store.length(async (err, data) => {
+                            expect(data).toEqual(3)
+                            done()
+                        })
+                    })
+                })
+            })
+        })
+    })
+})
+
+test('LENGTH will successfully report 0 when no sessions present', (done) => {
+    const store = new AuthExpressStore()
+
+    store.clear(() => {
+        store.length(async (err, data) => {
+            expect(data).toEqual(0)
+            done()
+        })
+    })
+})
+
+test('LENGTH will successfully report 0 when no unexpired sessions present', (done) => {
+    const store = new AuthExpressStore()
+
+    const session = getSessionDetails(undefined, Date.now() - 100) // Expired session
+
+    store.clear(() => {
+        store.set(session.sessionID, session.sessionData, async () => {
+            store.length(async (err, data) => {
+                // Session is expired, so should be 0
+                expect(data).toEqual(0)
+                done()
+            })
+        })
+    })
+})
+
+test('TOUCH successfully updates found sessions', (done) => {
+    const store = new AuthExpressStore()
+
+    // Ensured only 5 sessions present, with 2 of them expired.
+    const session1 = getSessionDetails()
+    const session2 = getSessionDetails()
+
+    store.clear(async () => {
+        store.set(session1.sessionID, session1.sessionData, async () => {
+            store.touch(session1.sessionID, session2.sessionData, async () => {
+                store.get(session1.sessionID, async (err, data) => {
+                    expect(data).toStrictEqual(session2.sessionData)
+                    done()
+                })
+            })
+        })
+    })
+})
+
+test('TOUCH does nothing for non-found sessions', (done) => {
+    const store = new AuthExpressStore()
+
+    // Ensured only 5 sessions present, with 2 of them expired.
+    const session1 = getSessionDetails()
+    const session2 = getSessionDetails()
+
+    expect(async () => {
+        store.clear(async () => {
+            store.set(session1.sessionID, session1.sessionData, async () => {
+                store.touch('abcd', session2.sessionData, async () => {
+                    store.get(session1.sessionID, async (err, data) => {
+                        expect(data).toStrictEqual(session1.sessionData)
+                        done()
+                    })
+                })
+            })
+        })
+    }).not.toThrow()
 })
