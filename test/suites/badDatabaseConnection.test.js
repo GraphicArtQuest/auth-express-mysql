@@ -138,6 +138,16 @@ test('Attempting to destroyUser with bad database connection logs error without 
     }).not.toThrow()
 })
 
+test('Attempting to createTable with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.createTable((res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
 afterAll(() => {
     delete process.env.DATABASE_PASSWORD
 })

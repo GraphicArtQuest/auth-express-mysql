@@ -33,13 +33,6 @@ const schemaDefaults = {
     }
 }
 
-const createTableStatements = `CREATE TABLE SESSIONS (
-        SESSION_ID varchar(128) primary key not null,
-        EXPIRES bigint not null,
-        DATA mediumtext not null,
-        USER varchar(255) not null
-    )`
-
 /**
  * Used in Express apps as an interface for an external session store residing in a MySQL database.
  * 
@@ -102,7 +95,6 @@ class AuthExpressStore extends Store {
                     configOptions?.database ||
                     databaseDefaults.database
             },
-            isAsync: configOptions?.isAsync || true,
             tableName: configOptions?.tableName || schemaDefaults.tableName,
             columnNames: {
                 sessionID: configOptions?.columnNames?.sessionID || 'SESSION_ID',
@@ -517,6 +509,37 @@ class AuthExpressStore extends Store {
             }
 
             debug.log(`Cleared all sessions for user '${user}': ${result}`)
+            return this.finalCallback(callback)
+        })
+    }
+
+    /**
+     * Creates the MySQL session table using the configuration provided during initialization.
+     * This is an optional method used to setup this table during runtime if not already done manually beforehand.
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error)`
+     */
+    createTable(callback) {
+        const sql = `CREATE TABLE IF NOT EXISTS ?? (
+            ?? varchar(128) primary key not null,
+            ?? bigint not null,
+            ?? mediumtext not null,
+            ?? varchar(255) not null)`
+        const params = [
+            this.settings.tableName,
+            this.settings.columnNames.sessionID,
+            this.settings.columnNames.expires,
+            this.settings.columnNames.data,
+            this.settings.columnNames.user
+        ]
+        this.connectToDatabase()
+        this.connection.query(sql, params, (error, result) => {
+            if (error) {
+                debug.error(`Cannot create table '${this.settings.tableName}': ${error.message}`)
+                return this.finalCallback(callback, error)
+            }
+
+            debug.log(`Created table '${this.settings.tableName}': ${result}`)
             return this.finalCallback(callback)
         })
     }

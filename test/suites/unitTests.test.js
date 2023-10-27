@@ -393,3 +393,33 @@ test('DESTROYUSER removes all sessions from the store for only that user, expire
         })
     })
 })
+
+test('CREATETABLE with defaults will successfully make the table, then add and retrieve, respectively, from database', (done) => {
+    const store = new AuthExpressStore()
+
+    store.createTable(() => {
+        store.clear(() => {
+            store.set(sampleSessionID, sampleSessionData, () => {
+                store.get(sampleSessionID, (err, data) => {
+                    expect(data).toStrictEqual(sampleSessionData)
+                    done()
+                })
+            })
+        })
+    })
+})
+
+test('CREATETABLE with new config data will successfully make the table, then add and retrieve, respectively, from database', (done) => {
+    const store = new AuthExpressStore({ tableName: 'TEST_SESSIONS' })
+
+    store.createTable(() => {
+        store.clear(() => {
+            store.set(sampleSessionID, sampleSessionData, () => {
+                store.get(sampleSessionID, (err, data) => {
+                    expect(data).toStrictEqual(sampleSessionData)
+                    done()
+                })
+            })
+        })
+    })
+})
