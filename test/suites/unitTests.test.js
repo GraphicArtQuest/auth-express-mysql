@@ -247,3 +247,149 @@ test('TOUCH does nothing for non-found sessions', (done) => {
         })
     }).not.toThrow()
 })
+
+test('EXPIRED returns all found sessions', (done) => {
+    const store = new AuthExpressStore()
+
+    // Ensured only 5 sessions present, with 2 of them expired.
+    const session1 = getSessionDetails()
+    const session2 = getSessionDetails()
+    const session3 = getSessionDetails()
+    const session4 = getSessionDetails(undefined, Date.now() - 100)
+    const session5 = getSessionDetails(undefined, Date.now() - 100)
+
+    store.clear(async () => {
+        store.set(session1.sessionID, session1.sessionData, async () => {
+            store.set(session2.sessionID, session2.sessionData, async () => {
+                store.set(session3.sessionID, session3.sessionData, async () => {
+                    store.set(session4.sessionID, session4.sessionData, async () => {
+                        store.set(session5.sessionID, session5.sessionData, async () => {
+                            store.expired(async (err, data) => {
+                                expect(Array.isArray(data)).toBeTruthy()
+                                expect(data).toHaveLength(2)
+                                done()
+                            })
+                        })
+                    })
+                })
+            })
+        })
+    })
+})
+
+test('EXPIRED returns nothing when no sessions are expired', (done) => {
+    const store = new AuthExpressStore()
+
+    // Ensured only 5 sessions present, with 2 of them expired.
+    const session1 = getSessionDetails()
+    const session2 = getSessionDetails()
+    const session3 = getSessionDetails()
+
+    store.clear(async () => {
+        store.set(session1.sessionID, session1.sessionData, async () => {
+            store.set(session2.sessionID, session2.sessionData, async () => {
+                store.set(session3.sessionID, session3.sessionData, async () => {
+                    store.expired(async (err, data) => {
+                        expect(Array.isArray(data)).toBeTruthy()
+                        expect(data).toHaveLength(0)
+                        done()
+                    })
+                })
+            })
+        })
+    })
+})
+
+test('EXPIREDLENGTH will successfully report 0 when no expired sessions present', (done) => {
+    const store = new AuthExpressStore()
+
+    const session = getSessionDetails()
+
+    store.clear(() => {
+        store.expiredLength(async (err, data) => {
+            store.set(session.sessionID, session.sessionData, async () => {
+                expect(data).toEqual(0)
+                done()
+            })
+        })
+    })
+})
+
+test('EXPIREDLENGTH will successfully report when expired sessions present', (done) => {
+    const store = new AuthExpressStore()
+
+    // Ensured only 5 sessions present, with 2 of them expired.
+    const session1 = getSessionDetails()
+    const session2 = getSessionDetails()
+    const session3 = getSessionDetails()
+    const session4 = getSessionDetails(undefined, Date.now() - 100)
+    const session5 = getSessionDetails(undefined, Date.now() - 100)
+
+    store.clear(async () => {
+        store.set(session1.sessionID, session1.sessionData, async () => {
+            store.set(session2.sessionID, session2.sessionData, async () => {
+                store.set(session3.sessionID, session3.sessionData, async () => {
+                    store.set(session4.sessionID, session4.sessionData, async () => {
+                        store.set(session5.sessionID, session5.sessionData, async () => {
+                            store.expiredLength(async (err, data) => {
+                                expect(data).toEqual(2)
+                                done()
+                            })
+                        })
+                    })
+                })
+            })
+        })
+    })
+})
+
+test('EXPIREDCLEAR removes all expired sessions from the store', (done) => {
+    const store = new AuthExpressStore()
+
+    const session1 = getSessionDetails()
+    const session2 = getSessionDetails()
+    const session3 = getSessionDetails()
+    const session4 = getSessionDetails(undefined, Date.now() - 100)
+
+    store.set(session1.sessionID, session1.sessionData, async () => {
+        store.set(session2.sessionID, session2.sessionData, async () => {
+            store.set(session3.sessionID, session3.sessionData, async () => {
+                store.set(session4.sessionID, session4.sessionData, async () => {
+                    store.expiredClear(async () => {
+                        store.expired(async (err, data) => {
+                            expect(data).toHaveLength(0)
+                            done()
+                        })
+                    })
+                })
+            })
+        })
+    })
+})
+
+test('DESTROYUSER removes all sessions from the store for only that user, expired or not', (done) => {
+    const store = new AuthExpressStore()
+
+    const session1 = getSessionDetails('test@test.com')
+    const session2 = getSessionDetails('test@test.com')
+    const session3 = getSessionDetails('otheruser@test.com')
+    const session4 = getSessionDetails('test@test.com', Date.now() - 100)
+
+    store.clear(async () => {
+        store.set(session1.sessionID, session1.sessionData, async () => {
+            store.set(session2.sessionID, session2.sessionData, async () => {
+                store.set(session3.sessionID, session3.sessionData, async () => {
+                    store.set(session4.sessionID, session4.sessionData, async () => {
+                        store.destroyUser('test@test.com', async () => {
+                            store.all(async (err, data) => {
+                                expect(data).toHaveLength(1)
+                                expect(data[0].USER).toEqual('otheruser@test.com')
+                                done()
+                            })
+                        })
+                    })
+                })
+            })
+        })
+    })
+})

@@ -98,6 +98,46 @@ test('Attempting to touch with bad database connection logs error without crashi
     }).not.toThrow()
 })
 
+test('Attempting to use expired with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.expired((res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
+test('Attempting to return expiredLength with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.expiredLength((res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
+test('Attempting to use expiredClear with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.expiredClear((res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
+test('Attempting to destroyUser with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.destroyUser('abcd', (res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
 afterAll(() => {
     delete process.env.DATABASE_PASSWORD
 })

@@ -220,15 +220,11 @@ class AuthExpressStore extends Store {
      * @returns {void}
      */
     finalCallback(callback, error, data) {
-        if (typeof callback !== 'function') {
-            // eslint-disable-next-line no-param-reassign, func-names
-            callback = function () {}
-        }
         this.closeDatabaseConnection()
         callback(error, data)
     }
 
-    // NOTE: All methods below extend the `Store` class.
+    // NOTE: The methods below extend the `Store` class.
     // Documentation for those functions is maintained under the `express-session` package.
 
     all(callback) {
@@ -392,6 +388,98 @@ class AuthExpressStore extends Store {
                 debug.log(`Client result: ${JSON.stringify(result)}`)
             }
             return this.finalCallback(callback, error)
+        })
+    }
+
+    // NOTE: The methods below are additional capabilities to the required/suggested ones above.
+    // Documentation for those functions is maintained with this package.
+
+    /**
+     * Returns *only* the expired sessions. Use the `all` method to get only the unexpired sessions.
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error, result)`
+     */
+    expired(callback) {
+        const sql = 'SELECT * FROM ?? WHERE ?? < ?'
+        // Get all info from all sessions that ARE expired
+        const params = [this.settings.tableName, this.settings.columnNames.expires, Date.now()]
+        this.connectToDatabase()
+
+        this.connection.query(sql, params, (error, result) => {
+            if (error) {
+                debug.error(`Cannot retrieve expired sessions: ${error.message}`)
+                return this.finalCallback(callback, error)
+            }
+
+            debug.log(`Retrieved ${result.length} expired sessions.`)
+            return this.finalCallback(callback, error, result)
+        })
+    }
+
+    /**
+     * This method returns *only* the count of expired sessions. Use the `length` method count only unexpired sessions.
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error, result)`
+     */
+    expiredLength(callback) {
+        const sql = 'SELECT COUNT(*) AS LEN FROM ?? WHERE ?? < ?'
+        // Get all info from all sessions that ARE expired
+        const params = [this.settings.tableName, this.settings.columnNames.expires, Date.now()]
+        this.connectToDatabase()
+
+        this.connection.query(sql, params, (error, result) => {
+            if (error) {
+                debug.error(`Cannot get length of all expired sessions: ${error.message}`)
+                return this.finalCallback(callback, error)
+            }
+
+            debug.log(`Identified ${result.length} expired sessions.`)
+            return this.finalCallback(callback, error, result[0].LEN)
+        })
+    }
+
+    /**
+     * This method deletes *only* the expired sessions. Use the `clear` deletes *all* sessions.
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error)`
+     */
+    expiredClear(callback) {
+        const sql = 'DELETE FROM ?? WHERE ?? < ?'
+        const params = [this.settings.tableName, this.settings.columnNames.expires, Date.now()]
+        this.connectToDatabase()
+
+        this.connection.query(sql, params, (error, result) => {
+            if (error) {
+                debug.error(`Cannot clear all expired sessions: ${error.message}`)
+                return this.finalCallback(callback, error)
+            }
+
+            debug.log(`Cleared all expired sessions: ${result}`)
+            return this.finalCallback(callback)
+        })
+    }
+
+    /**
+     * This method deletes *all sessions*, expired or not, for the specified user. Use the `destroy` method to delete
+     * a single session based on session ID. This method would typically be used to log a user out of all previously
+     * stored sessions across multiple devices.
+     * @param {string} user The user to destroy all sessions for. Typically an email address.
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error)`
+     */
+    destroyUser(user, callback) {
+        const sql = 'DELETE FROM ?? WHERE ?? = ?'
+        const params = [this.settings.tableName, this.settings.columnNames.user, user]
+        this.connectToDatabase()
+
+        this.connection.query(sql, params, (error, result) => {
+            if (error) {
+                debug.error(`Cannot clear all sessions for user '${user}': ${error.message}`)
+                return this.finalCallback(callback, error)
+            }
+
+            debug.log(`Cleared all sessions for user '${user}': ${result}`)
+            return this.finalCallback(callback)
         })
     }
 }
