@@ -57,6 +57,26 @@ test('Attempting to get with bad database connection logs error without crashing
     }).not.toThrow()
 })
 
+test('Attempting to use all with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.all((res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
+test('Attempting to use clear with bad database connection logs error without crashing the app', (done) => {
+    const store = new AuthExpressStore()
+    expect(() => {
+        store.clear((res) => {
+            expect(res).toBeInstanceOf(Error)
+            done()
+        })
+    }).not.toThrow()
+})
+
 afterAll(() => {
     delete process.env.DATABASE_PASSWORD
 })

@@ -232,11 +232,36 @@ class AuthExpressStore extends Store {
     // Documentation for those functions is maintained under the `express-session` package.
 
     all(callback) {
-        return callback()
+        const sql = 'SELECT * FROM ?? WHERE ?? >= ?'
+        // Get all info from all sessions that are not expired
+        const params = [this.settings.tableName, this.settings.columnNames.expires, Date.now()]
+        this.connectToDatabase()
+
+        this.connection.query(sql, params, (error, result) => {
+            if (error) {
+                debug.error(`Cannot retrieve all sessions: ${error.message}`)
+                return this.finalCallback(callback, error)
+            }
+
+            debug.log(`Retrieved ${result.length} unexpired sessions.`)
+            return this.finalCallback(callback, error, result)
+        })
     }
 
     clear(callback) {
-        return callback()
+        const sql = 'TRUNCATE ??'
+        const params = [this.settings.tableName]
+        this.connectToDatabase()
+
+        this.connection.query(sql, params, (error, result) => {
+            if (error) {
+                debug.error(`Cannot clear all sessions: ${error.message}`)
+                return this.finalCallback(callback, error)
+            }
+
+            debug.log(`Cleared all sessions: ${result}`)
+            return this.finalCallback(callback)
+        })
     }
 
     destroy(sessionID, callback) {
@@ -287,6 +312,7 @@ class AuthExpressStore extends Store {
                     `Session ${sessionID} successfully fetched. Data: ${JSON.stringify(result[0])}`
                 )
                 const sessionData = JSON.parse(result[0].DATA)
+                sessionData.cookie.expires = new Date(Date.parse(sessionData.cookie.expires)) // Required to convert bigint back to cookie based string
                 return this.finalCallback(callback, error, sessionData)
             }
             return this.finalCallback(callback, error)
@@ -299,7 +325,7 @@ class AuthExpressStore extends Store {
 
     set(sessionID, session, callback) {
         const sessionData = JSON.stringify(session)
-        const timeExpires = null // new Date(session.cookie.expires)
+        const timeExpires = session.cookie.expires
         const sql =
             'INSERT INTO ?? (??, ??, ??, ??) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE ?? = ?, ?? = ?'
         const params = [
@@ -310,7 +336,7 @@ class AuthExpressStore extends Store {
             this.settings.columnNames.user,
             sessionID,
             sessionData,
-            timeExpires,
+            Date.parse(timeExpires),
             session.passport?.user,
             this.settings.columnNames.data,
             sessionData,
@@ -335,4 +361,4 @@ class AuthExpressStore extends Store {
     }
 }
 
-module.exports = { databaseDefaults, debug, AuthExpressStore }
+module.exports = { AuthExpressStore, debug, databaseDefaults, schemaDefaults }
