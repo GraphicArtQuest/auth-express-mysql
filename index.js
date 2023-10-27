@@ -224,9 +224,11 @@ class AuthExpressStore extends Store {
         callback(error, data)
     }
 
-    // NOTE: The methods below extend the `Store` class.
-    // Documentation for those functions is maintained under the `express-session` package.
-
+    /**
+     * Returns *all* sessions in the store that not expired. Use the `expired` method to get only the unexpired sessions.
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error, result)`
+     */
     all(callback) {
         const sql = 'SELECT * FROM ?? WHERE ?? >= ?'
         // Get all info from all sessions that are not expired
@@ -244,6 +246,11 @@ class AuthExpressStore extends Store {
         })
     }
 
+    /**
+     * This method deletes *ALL* sessions from the store. Use the `expiredClear` to delete *only* expired sessions.
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error)`
+     */
     clear(callback) {
         const sql = 'TRUNCATE ??'
         const params = [this.settings.tableName]
@@ -260,6 +267,12 @@ class AuthExpressStore extends Store {
         })
     }
 
+    /**
+     * Destroys the session with the given session ID.
+     * @param {string} sessionID The unique identifier for the session
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error)`
+     */
     destroy(sessionID, callback) {
         const sql = 'DELETE FROM ?? WHERE ?? = ?'
         const params = [this.settings.tableName, this.settings.columnNames.sessionID, sessionID]
@@ -288,6 +301,15 @@ class AuthExpressStore extends Store {
         })
     }
 
+    /**
+     * Gets the session from the store given a session ID and passes it to callback.
+     *
+     * The `session` argument should be a `Session` object if found, otherwise `null` or `undefined` if the session was not
+     * found and there was no error. A special case is made when `error.code === 'ENOENT'` to act like `callback(null, null)`.
+     * @param {string} sessionID The unique identifier for the session
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error, sessionData)`
+     */
     get(sessionID, callback) {
         const sql = 'SELECT ?? FROM ?? WHERE ?? = ?'
         const params = [
@@ -315,6 +337,11 @@ class AuthExpressStore extends Store {
         })
     }
 
+    /**
+     * This method returns *only* the count of unexpired sessions. Use the `expiredLength` method count only expired sessions.
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error, length)`
+     */
     length(callback) {
         const sql = 'SELECT COUNT(*) AS LEN FROM ?? WHERE ?? >= ?'
         // Get all info from all sessions that are not expired
@@ -332,6 +359,13 @@ class AuthExpressStore extends Store {
         })
     }
 
+    /**
+     * Upsert a session in the store given a session ID and SessionData.
+     * @param {string} sessionID Unique identifier for the session
+     * @param {object} session Session data to be parsed by `express-session`
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error)`
+     */
     set(sessionID, session, callback) {
         const sessionData = JSON.stringify(session)
         const timeExpires = session.cookie.expires
@@ -365,6 +399,13 @@ class AuthExpressStore extends Store {
         })
     }
 
+    /**
+     * "Touches" a given session, resetting the idle timer.
+     * @param {string} sessionID Unique identifier for the session
+     * @param {object} session Session data to be parsed by `express-session`
+     * @param {Function} [callback] The function to execute once complete
+     * @returns {void} The data in a callback of form `callback(error)`
+     */
     touch(sessionID, session, callback) {
         const sessionData = JSON.stringify(session)
         const timeExpires = session.cookie.expires
@@ -391,9 +432,6 @@ class AuthExpressStore extends Store {
         })
     }
 
-    // NOTE: The methods below are additional capabilities to the required/suggested ones above.
-    // Documentation for those functions is maintained with this package.
-
     /**
      * Returns *only* the expired sessions. Use the `all` method to get only the unexpired sessions.
      * @param {Function} [callback] The function to execute once complete
@@ -419,7 +457,7 @@ class AuthExpressStore extends Store {
     /**
      * This method returns *only* the count of expired sessions. Use the `length` method count only unexpired sessions.
      * @param {Function} [callback] The function to execute once complete
-     * @returns {void} The data in a callback of form `callback(error, result)`
+     * @returns {void} The data in a callback of form `callback(error, length)`
      */
     expiredLength(callback) {
         const sql = 'SELECT COUNT(*) AS LEN FROM ?? WHERE ?? < ?'
