@@ -17,6 +17,8 @@
     "keywords": [
         "express",
         "express-session",
+        "express-sessions",
+        "express-session-store",
         "mysql",
         "session"
     ],
