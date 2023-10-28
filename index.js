@@ -55,10 +55,11 @@ const schemaDefaults = {
             user: 'USER'
         }
     }
+    const sessionStore = new AuthExpressStore(configOptions)
  
     app.use(
         session({
-            store: new AuthExpressStore(configOptions),
+            store: sessionStore,
             name: 'sessionID',
             secret: 'my_session_secret',
             resave: false,
@@ -113,6 +114,7 @@ class AuthExpressStore extends Store {
      * Provides basic error checking and cleaning up over user provided config info. If there are irreperable problems
      * with the user's configuration, this class will throw an error. This error occurs at server startup, therefore an
      * interuption in service is deniable before the system is placed online.
+     * @private
      * @returns {void}
      */
     sanitizeConfiguration() {
@@ -173,6 +175,7 @@ class AuthExpressStore extends Store {
     /**
      * Uses the store's configuration settings to connect to the MySQL database. If the database is inaccessible, it
      * will log the issue through `debug`, but otherwise will not cause further disruption.
+     * @private
      * @returns {void}
      */
     connectToDatabase() {
@@ -194,6 +197,7 @@ class AuthExpressStore extends Store {
 
     /**
      * Attempts to close the database connection. If called when the connection is inactive, it does nothing.
+     * @private
      * @returns {void}
      */
     closeDatabaseConnection() {
@@ -209,6 +213,7 @@ class AuthExpressStore extends Store {
      * @param {Function} callback The callback function
      * @param {string} error The error string, if applicable
      * @param {object} data the data to return, if applicable
+     * @private
      * @returns {void}
      */
     finalCallback(callback, error, data) {
@@ -239,7 +244,7 @@ class AuthExpressStore extends Store {
     }
 
     /**
-     * This method deletes *ALL* sessions from the store. Use the `expiredClear` to delete *only* expired sessions.
+     * This method deletes *ALL* sessions from the store. Use the `expiredClear` method to delete *only* expired sessions.
      * @param {Function} [callback] The function to execute once complete
      * @returns {void} The data in a callback of form `callback(error)`
      */
@@ -469,7 +474,7 @@ class AuthExpressStore extends Store {
     }
 
     /**
-     * This method deletes *only* the expired sessions. Use the `clear` deletes *all* sessions.
+     * This method deletes *only* the expired sessions. Use the `clear` to delete *all* sessions.
      * @param {Function} [callback] The function to execute once complete
      * @returns {void} The data in a callback of form `callback(error)`
      */
