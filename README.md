@@ -27,6 +27,7 @@ For added reliability and peace of mind, the `auth-express-mysql` testing suite 
 -   [Development Environment](#development-environment)
     -   [The MySQL Database](#the-mysql-database)
     -   [Scripts](#scripts)
+-   [Credits](#credits)
 -   [License](#license)
 
 ## Installation
@@ -305,6 +306,10 @@ The test suite executes against an active local MySQL database. You can host thi
 -   `npm run debug:watch`: Same as the `debug` script, but with Jest in watch mode
 
 All commits must follow the [GraphicArtQuest Common Commit Guidance][gaq common commit]. _This specification is inspired by and supersedes the [Angular Commit Message](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit)._ This project has no custom scopes.
+
+## Credits
+
+Many thanks to [Charles Hill](https://github.com/chill117) and his [express-mysql-session](https://github.com/chill117/express-mysql-session) package. `auth-express-mysql` is not a fork of `express-mysql-session`, but it would not exist without Charles's work to study and iterate on.
 
 ## License
 
