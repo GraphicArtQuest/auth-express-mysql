@@ -24,12 +24,12 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git://github.com/GraphicArtQuest/auth-express-mysql"
+        "url": "git://github.com/WayfindEntertainment/auth-express-mysql"
     },
     "bugs": {
-        "url": "https://github.com/GraphicArtQuest/auth-express-mysql/issues"
+        "url": "https://github.com/WayfindEntertainment/auth-express-mysql/issues"
     },
-    "author": "Wayfind Entertainment LLC",
+    "author": "M. Scott Lassiter",
     "license": "MIT",
     "dependencies": {
         "debug": "^4.3.4"

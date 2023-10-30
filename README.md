@@ -1,6 +1,6 @@
 # auth-express-mysql
 
-[![Licensed under the MIT License](https://img.shields.io/github/license/GraphicArtQuest/auth-express-mysql?color=blue)][license]
+[![Licensed under the MIT License](https://img.shields.io/github/license/WayfindEntertainment/auth-express-mysql?color=blue)][license]
 [![Contributions welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg?style=flat)](#contributions)
 
 An [express-session](https://github.com/expressjs/session) store to manage [express.js](http://expressjs.com/) sessions with a MySQL database.
@@ -253,7 +253,7 @@ If you want to see the session store's debug messages while debugging your own p
 
 ## Contributing
 
-Contributions are welcome! Please help keep this project open and inclusive. Refer to the [Code of Conduct](https://github.com/GraphicArtQuest/.github/blob/main/CODE_OF_CONDUCT.md) before your first contribution.
+Contributions are welcome! Please help keep this project open and inclusive. Refer to the [Code of Conduct](https://github.com/WayfindEntertainment/.github/blob/main/CODE_OF_CONDUCT.md) before your first contribution.
 
 Here are some ways you can contribute.
 
@@ -281,14 +281,14 @@ To submit a pull request,
 
 1. Fork and clone the repository
 1. Create a branch for your edits
-1. Make sure your work follows the [Common Commit Guidance][gaq common commit] guidance
+1. Make sure your work follows the [Common Commit Guidance][wfe common commit] guidance
 
 ## Development Environment
 
 This project uses a Node environment to help with linting, formatting, testing, and distribution. To install a local copy, clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/GraphicArtQuest/auth-express-mysql.git
+git clone https://github.com/WayfindEntertainment/auth-express-mysql.git
 cd auth-express-mysql
 npm install
 ```
@@ -305,7 +305,7 @@ The test suite executes against an active local MySQL database. You can host thi
 -   `npm run debug`: Same as `test`, but allows debug info to write to the console
 -   `npm run debug:watch`: Same as the `debug` script, but with Jest in watch mode
 
-All commits must follow the [GraphicArtQuest Common Commit Guidance][gaq common commit]. _This specification is inspired by and supersedes the [Angular Commit Message](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit)._ This project has no custom scopes.
+All commits must follow the Wayfind Entertainment [Common Commit Guidance][wfe common commit]. _This specification is inspired by and supersedes the [Angular Commit Message](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit)._ This project has no custom scopes.
 
 ## Credits
 
@@ -316,7 +316,7 @@ Many thanks to [Charles Hill](https://github.com/chill117) and his [express-mysq
 To help as many fellow developers as possible, this package is distributed as free and open-source software under the [MIT][license] license.
 
 [license]: LICENSE.txt
-[security policy]: https://github.com/GraphicArtQuest/Bedrock-Debug-Screen/security/policy
-[choose issue]: https://github.com/GraphicArtQuest/Bedrock-Debug-Screen/issues/new/choose
-[enhancements requested]: https://github.com/GraphicArtQuest/Bedrock-Debug-Screen/labels/enhancement
-[gaq common commit]: https://github.com/GraphicArtQuest/Common-Commit-Guidance
+[security policy]: https://github.com/WayfindEntertainment/auth-express-mysql/security/policy
+[choose issue]: https://github.com/WayfindEntertainment/auth-express-mysql/issues/new/choose
+[enhancements requested]: https://github.com/WayfindEntertainment/auth-express-mysql/labels/enhancement
+[wfe common commit]: https://github.com/WayfindEntertainment/Common-Commit-Guidance
