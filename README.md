@@ -1,6 +1,6 @@
 # auth-express-mysql
 
-[![Licensed under the MIT License](https://img.shields.io/github/license/WayfindEntertainment/auth-express-mysql?color=blue)][license]
+[![Licensed under the MIT License](https://img.shields.io/github/license/WayfindEntertainment/auth-express-mysql?color=blue)](LICENSE)
 [![Contributions welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg?style=flat)](#contributions)
 
 An [express-session](https://github.com/expressjs/session) store to manage [express.js](http://expressjs.com/) sessions with a MySQL database.
@@ -313,9 +313,8 @@ Many thanks to [Charles Hill](https://github.com/chill117) and his [express-mysq
 
 ## License
 
-To help as many fellow developers as possible, this package is distributed as free and open-source software under the [MIT][license] license.
+To help as many fellow developers as possible, this package is distributed as free and open-source software under the [MIT](LICENSE) license.
 
-[license]: LICENSE.txt
 [security policy]: https://github.com/WayfindEntertainment/auth-express-mysql/security/policy
 [choose issue]: https://github.com/WayfindEntertainment/auth-express-mysql/issues/new/choose
 [enhancements requested]: https://github.com/WayfindEntertainment/auth-express-mysql/labels/enhancement
