@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 const createDebug = require('debug')
 const mysql = require('mysql')
 const { Store } = require('express-session')
