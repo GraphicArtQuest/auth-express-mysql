@@ -90,12 +90,14 @@ function initializePassport(passportInstance) {
 
 const app = express()
 initializePassport(passport)
+const store = new AuthExpressStore()
+store.createTable()
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(
     session({
-        store: new AuthExpressStore(),
+        store,
         name: 'sessionID',
         secret: 'testing_secret',
         resave: false,
