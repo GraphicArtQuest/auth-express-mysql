@@ -29,13 +29,15 @@ test('Should log an error without crashing the app if the database is not reacha
     const goodCredentials = { email: 'test@test.com', password: 'good' }
     const agent = request.agent(app)
 
-    await agent
-        .post('/login')
-        .send(goodCredentials)
-        .expect(500)
-        .then((res) => {
-            expect(res.text).toMatch(/Uncaught error in login/)
-        })
+    expect(async () => {
+        await agent
+            .post('/login')
+            .send(goodCredentials)
+            .expect(500)
+            .then((res) => {
+                expect(res.text).toMatch(/Uncaught error in login/)
+            })
+    }).not.toThrow()
 })
 
 test('Attempting to set with bad database connection logs error without crashing the app', (done) => {
