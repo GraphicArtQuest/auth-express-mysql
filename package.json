@@ -10,8 +10,12 @@
         "format": "npx prettier . --write",
         "lint": "eslint . --ext .js --fix",
         "serve": "set DEBUG=* &  node test/setupTestServer",
+        "pretest": "node test/preTest",
         "test": "jest --coverage --verbose --silent",
+        "posttest": "node test/postTest",
+        "predebug": "node test/preTest",
         "debug": "set DEBUG_COLORS=1 & set DEBUG_HIDE_DATE=1 & set DEBUG=auth-express-mysql:*,superagent,express-session & jest --coverage --verbose",
+        "postdebug": "node test/postTest",
         "debug:watch": "set DEBUG_COLORS=1 & set DEBUG_HIDE_DATE=1 & set DEBUG=auth-express-mysql:*,superagent,express-session & jest --verbose --watch"
     },
     "keywords": [
