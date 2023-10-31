@@ -41,7 +41,7 @@ const schemaDefaults = {
  * environment variables, or omitted to use the defaults. See the `README` for more configuration information.
  * @example
     const configOptions = {
-        host: 'localhost'
+        host: 'localhost',
         port: 3306,
         user: 'auth_express_mysql_test_user',
         password: 'password123456',
