@@ -302,7 +302,7 @@ class AuthExpressStore extends Store {
     }
 
     /**
-     * Gets the session from the store given a session ID and passes it to callback.
+     * Gets the session (if not expired) from the store given a session ID and passes it to callback.
      *
      * The `session` argument should be a `Session` object if found, otherwise `null` or `undefined` if the session was not
      * found and there was no error. A special case is made when `error.code === 'ENOENT'` to act like `callback(null, null)`.
@@ -311,12 +311,14 @@ class AuthExpressStore extends Store {
      * @returns {void} The data in a callback of form `callback(error, sessionData)`
      */
     get(sessionID, callback) {
-        const sql = 'SELECT ?? FROM ?? WHERE ?? = ?'
+        const sql = 'SELECT ?? FROM ?? WHERE ?? = ? AND ?? >= ?'
         const params = [
             this.settings.columnNames.data,
             this.settings.tableName,
             this.settings.columnNames.sessionID,
-            sessionID
+            sessionID,
+            this.settings.columnNames.expires,
+            Date.now()
         ]
         this.connectToDatabase()
         this.connection.query(sql, params, (error, result) => {
@@ -361,6 +363,7 @@ class AuthExpressStore extends Store {
 
     /**
      * Upsert a session in the store given a session ID and SessionData.
+     * If the session already exists, ignore it. The `touch` function will handle updates.
      * @param {string} sessionID Unique identifier for the session
      * @param {object} session Session data to be parsed by `express-session`
      * @param {Function} [callback] The function to execute once complete
@@ -369,8 +372,7 @@ class AuthExpressStore extends Store {
     set(sessionID, session, callback) {
         const sessionData = JSON.stringify(session)
         const timeExpires = session.cookie.expires
-        const sql =
-            'INSERT INTO ?? (??, ??, ??, ??) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE ?? = ?, ?? = ?'
+        const sql = 'INSERT IGNORE INTO ?? (??, ??, ??, ??) VALUES (?, ?, ?, ?)'
         const params = [
             this.settings.tableName,
             this.settings.columnNames.sessionID,
@@ -380,11 +382,7 @@ class AuthExpressStore extends Store {
             sessionID,
             sessionData,
             Date.parse(timeExpires),
-            session.passport?.user,
-            this.settings.columnNames.data,
-            sessionData,
-            this.settings.columnNames.expires,
-            timeExpires
+            session.passport?.user
         ]
 
         this.connectToDatabase()

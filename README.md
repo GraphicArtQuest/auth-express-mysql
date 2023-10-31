@@ -175,7 +175,7 @@ Destroys the session with the given session ID.
 
 ### `get(sessionID, callback)`
 
-Gets the session from the store given a session ID and passes it to callback.
+Gets the session (if not expired) from the store given a session ID and passes it to callback.
 
 The `session` argument should be a `Session` object if found, otherwise `null` or `undefined` if the session was not found and there was no error. A special case is made when `error.code === 'ENOENT'` to act like `callback(null, null)`.
 
@@ -189,7 +189,7 @@ This method returns _only_ the count of unexpired sessions. Use the `expiredLeng
 
 ### `set(sessionID, session, callback)`
 
-Upsert a session in the store given a session ID and SessionData.
+Upsert a session in the store given a session ID and SessionData. If the session already exists, ignore it. The `touch` function will handle updates.
 
 -   Returns: The data in a callback of form `callback(error)`
 
