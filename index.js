@@ -216,8 +216,12 @@ class AuthExpressStore extends Store {
      * @returns {void}
      */
     finalCallback(callback, error, data) {
+        let safeCallback = callback
+        if (typeof safeCallback !== 'function') {
+            safeCallback = () => {}
+        }
         this.closeDatabaseConnection()
-        callback(error, data)
+        safeCallback(error, data)
     }
 
     /**
